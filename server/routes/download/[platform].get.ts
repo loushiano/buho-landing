@@ -2,8 +2,8 @@ import {
   canonicalPlatform,
   isPublicFileUrl,
   preferredDownload,
-} from '../../../shared/release'
-import { readReleaseManifest } from '../../utils/release-manifest'
+} from '#shared/release'
+import { presignReleaseDownload, readReleaseManifest } from '../../utils/release-manifest'
 
 export default defineEventHandler(async (event) => {
   const platform = canonicalPlatform(getRouterParam(event, 'platform') || '')
@@ -14,9 +14,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const manifest = await readReleaseManifest()
+  const manifest = await readReleaseManifest(event)
   const download = preferredDownload(manifest.downloads, platform)
-  if (!download || !isPublicFileUrl(download.url)) {
+  if (!download) {
     throw createError({
       statusCode: 404,
       statusMessage: platform === 'windows'
@@ -25,6 +25,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  setResponseHeader(event, 'cache-control', 'public, max-age=60')
-  return sendRedirect(event, download.url, 302)
+  const url = await presignReleaseDownload(event, manifest.version, download.file)
+  if (!isPublicFileUrl(url)) {
+    throw createError({
+      statusCode: 502,
+      statusMessage: 'The installer link could not be signed.',
+    })
+  }
+
+  setResponseHeader(event, 'cache-control', 'private, no-store')
+  return sendRedirect(event, url, 302)
 })

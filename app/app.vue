@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { latestDownloadPath, preferredDownload, type ReleaseManifest } from '../shared/release'
+import { latestDownloadPath, preferredDownload, type ReleaseManifest } from '#shared/release'
 
 const { data, error, status } = await useFetch<ReleaseManifest>('/api/release')
 
