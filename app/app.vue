@@ -39,6 +39,7 @@ useHead({
   <div>
     <NuxtRouteAnnouncer />
     <main class="page">
+      <img class="logo" src="/logo.png" width="88" height="88" alt="" />
       <p class="mark">Desktop</p>
       <h1>Buho</h1>
       <p class="lede">
